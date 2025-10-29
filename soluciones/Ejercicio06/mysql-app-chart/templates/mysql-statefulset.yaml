@@ -1,0 +1,68 @@
+
+{{- if .Values.mysql.enabled }} # Condicional que asegura que el StatefulSet se crea solo si MySQL está habilitado
+apiVersion: apps/v1                     # Especifica la versión de la API para el recurso StatefulSet
+kind: StatefulSet                       # Define el recurso como un StatefulSet para gestionar el estado de MySQL
+metadata:
+  name: mysql                           # Nombre del StatefulSet
+  namespace: {{ .Release.Namespace }}   # Espacio de nombres dinámico basado en Helm
+  labels:                               # Etiquetas asociadas al StatefulSet
+    app: mysql                          # Etiqueta que identifica este StatefulSet como parte de MySQL
+    type: standalone                    # Clasificación adicional para MySQL standalone
+spec:
+  replicas: 1                           # Número de réplicas del StatefulSet (solo una instancia en este caso)
+  selector:                             # Selector que define los Pods gestionados por este StatefulSet
+    matchLabels:
+      app: mysql                        # Selector basado en la etiqueta `app: mysql`
+      type: standalone                  # Selector adicional para Pods standalone
+  serviceName: mysql                    # Nombre del servicio al que se asociará este StatefulSet
+  template:
+    metadata:
+      labels:
+        app: mysql                      # Etiqueta para los Pods creados por este StatefulSet
+        type: standalone                # Clasificación adicional
+    spec:
+      containers:
+      - name: mysql                     # Nombre del contenedor
+        image: {{ .Values.mysql.image }} # Imagen de Docker para el contenedor de MySQL
+        imagePullPolicy: IfNotPresent   # Política de obtención de imagen (descargar solo si no está presente)
+        ports:
+        - name: server                  # Nombre del puerto del contenedor
+          containerPort: 3306           # Puerto interno del contenedor para MySQL
+        env:                            # Variables de entorno para la configuración de MySQL
+        {{- range .Values.mysql.users }} # Iteración sobre los usuarios definidos en el archivo de valores
+        - name: {{ if .isRoot }}MYSQL_ROOT_PASSWORD{{ else }}MYSQL_PASSWORD{{ end }}
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret        # Referencia al Secret para las credenciales
+              key: mysql-{{ .name }}-password
+        {{- if not .isRoot }}
+        - name: MYSQL_USER
+          value: {{ .name | trim | quote }} # Nombre de usuario MySQL, asegurando el formato correcto
+        {{- end }}
+        {{- end }}
+        - name: MYSQL_DATABASE
+          value: {{ .Values.mysql.databaseName | upper | quote }} # Nombre de la base de datos, en mayúsculas y con comillas
+        volumeMounts:                   # Montaje de volúmenes persistentes
+        - name: data
+          mountPath: /var/lib/mysql     # Ruta donde se almacena el estado de MySQL
+        resources:                      # Configuración de recursos para el contenedor
+          limits:
+            memory: {{ .Values.mysql.resources.limits.memory }} # Límite de memoria
+            cpu: {{ .Values.mysql.resources.limits.cpu }}       # Límite de CPU
+          requests:
+            memory: {{ .Values.mysql.resources.requests.memory }} # Solicitud mínima de memoria
+            cpu: {{ .Values.mysql.resources.requests.cpu }}       # Solicitud mínima de CPU
+  volumeClaimTemplates:                 # Plantilla para definir volúmenes persistentes
+  - metadata:
+      name: data                        # Nombre del volumen
+      labels:
+        app: mysql                      # Etiqueta para asociar con el StatefulSet
+        type: standalone                # Clasificación adicional
+    spec:
+      accessModes:
+      - ReadWriteOnce                   # Modo de acceso (lectura/escritura por una sola instancia)
+      storageClassName: {{ .Values.persistentVolume.storageClassName }} # Clase de almacenamiento
+      resources:
+        requests:
+          storage: {{ .Values.mysql.storage.size }} # Tamaño del volumen solicitado
+{{- end }} # Fin del bloque condicional

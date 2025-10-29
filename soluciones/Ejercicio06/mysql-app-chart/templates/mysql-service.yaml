@@ -1,0 +1,18 @@
+apiVersion: v1                    # Especifica la versión de la API para el recurso Service
+kind: Service                     # Define el tipo de recurso como Service
+metadata:
+  name: mysql                     # Nombre del servicio
+  namespace: {{ .Release.Namespace }} # Espacio de nombres dinámico basado en Helm
+  labels:                         # Etiquetas asociadas al servicio
+    app: mysql                    # Etiqueta que identifica el servicio como parte de MySQL
+    type: standalone              # Etiqueta adicional para clasificar el servicio
+spec:
+  type: ClusterIP                 # Tipo de servicio; ClusterIP lo hace accesible solo dentro del clúster
+  ports:                          # Configuración de los puertos del servicio
+  - name: server                  # Nombre descriptivo del puerto
+    port: 3306                    # Puerto en el que el servicio escucha dentro del clúster
+    protocol: TCP                 # Protocolo utilizado por el servicio
+    targetPort: 3306              # Puerto del contenedor al que se redirige el tráfico
+  selector:                       # Selector para asociar este servicio a los Pods correspondientes
+    app: mysql                    # Selector basado en la etiqueta `app: mysql`
+    type: standalone              # Selector adicional para garantizar que se asocia solo a Pods MySQL standalone

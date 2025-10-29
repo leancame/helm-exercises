@@ -1,0 +1,28 @@
+# Especifica la versión de la API de Kubernetes para el recurso Service
+apiVersion: v1
+# Define el tipo de recurso, en este caso, un Service
+kind: Service
+# Metadatos asociados al Service
+metadata:
+  # Nombre del Service
+  name: mysql
+  # Espacio de nombres donde se desplegará el Service, dinámico con Helm
+  namespace: {{ .Release.Namespace }}
+  # Etiquetas para identificar el recurso y facilitar la selección
+  labels:
+    app: mysql          # Etiqueta para identificar la aplicación MySQL
+    type: standalone    # Tipo de despliegue
+# Especificación del Service
+spec:
+  # Tipo de Service: ClusterIP (el predeterminado), permite la comunicación interna dentro del clúster
+  type: ClusterIP
+  # Configuración de los puertos expuestos por el Service
+  ports:
+  - name: server         # Nombre descriptivo del puerto
+    port: 3306           # Puerto en el que se expone el servicio dentro del clúster
+    protocol: TCP        # Protocolo utilizado para la comunicación
+    targetPort: 3306     # Puerto en el contenedor donde la aplicación escucha
+  # Selector para asociar el Service con los Pods que comparten estas etiquetas
+  selector:
+    app: mysql           # Debe coincidir con la etiqueta del Pod
+    type: standalone     # Asegura que solo los Pods etiquetados como 'standalone' sean seleccionados

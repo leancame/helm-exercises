@@ -1,0 +1,32 @@
+mysql:
+  enabled: true # Habilita el despliegue de MySQL
+  image: mysql:latest # Especifica la imagen de MySQL que se usará
+  databaseName: "mydatabase" # Nombre de la base de datos que se creará
+  rootPassword: "" # Contraseña del usuario root (vacía actualmente)
+  userPassword: "" # Contraseña para el usuario estándar (vacía actualmente)
+  users:
+    - name: "root" # Usuario root con privilegios administrativos
+      isRoot: true
+    - name: "user" # Usuario estándar sin privilegios root
+      isRoot: false
+  storage:
+    size: 5Gi # Tamaño del almacenamiento persistente para MySQL
+  resources:
+    requests:
+      memory: "512Mi" # Solicitud mínima de memoria para el contenedor
+      cpu: "1" # Solicitud mínima de CPU
+    limits:
+      memory: "4Gi" # Límite máximo de memoria para el contenedor
+      cpu: "2" # Límite máximo de CPU para el contenedor
+
+phpMyAdmin:
+  enabled: true # Habilita el despliegue de phpMyAdmin
+  image: phpmyadmin/phpmyadmin # Especifica la imagen de phpMyAdmin
+  port: 80 # Puerto en el que phpMyAdmin estará disponible
+
+service:
+  phpMyAdminNodePort: 31008 # Puerto NodePort para exponer phpMyAdmin externamente
+
+persistentVolume:
+  storageClassName: standard # Clase de almacenamiento para los volúmenes persistentes
+  size: 1Gi # Tamaño del volumen persistente

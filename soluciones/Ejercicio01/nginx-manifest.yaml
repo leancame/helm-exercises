@@ -1,0 +1,286 @@
+---
+# Source: nginx/templates/networkpolicy.yaml
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: lcm-nginx
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: lcm-nginx
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/version: 1.28.0
+    helm.sh/chart: nginx-20.0.2
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: lcm-nginx
+      app.kubernetes.io/name: nginx
+  policyTypes:
+    - Ingress
+    - Egress
+  egress:
+    - {}
+  ingress:
+    - ports:
+        - port: 8080
+        - port: 8443
+---
+# Source: nginx/templates/pdb.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: lcm-nginx
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: lcm-nginx
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/version: 1.28.0
+    helm.sh/chart: nginx-20.0.2
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: lcm-nginx
+      app.kubernetes.io/name: nginx
+---
+# Source: nginx/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: lcm-nginx
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: lcm-nginx
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/version: 1.28.0
+    helm.sh/chart: nginx-20.0.2
+automountServiceAccountToken: false
+---
+# Source: nginx/templates/tls-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: lcm-nginx-tls
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: lcm-nginx
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/version: 1.28.0
+    helm.sh/chart: nginx-20.0.2
+type: kubernetes.io/tls
+data:
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURlVENDQW1HZ0F3SUJBZ0lSQUxQem0wYnRzR1RYNkRPQk5qeTRKRm93RFFZSktvWklodmNOQVFFTEJRQXcKRXpFUk1BOEdBMVVFQXhNSWJtZHBibmd0WTJFd0hoY05NalV3TlRFNU1USTBOek16V2hjTk1qWXdOVEU1TVRJMApOek16V2pBVU1SSXdFQVlEVlFRREV3bHNZMjB0Ym1kcGJuZ3dnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCCkR3QXdnZ0VLQW9JQkFRRFpETEpuT2J6Z1hzNnE4RC83Yk1wZEVDLy9lTEdyekNZdEIvZlJpSnBxNUVOSUk1Um4KL3dNalRzbFBQUlJIeFNlY3FZN3ZHMDJkN1gydTgzVDVHRXJKRU0xcVlublV6SlczV3o5VG9lU2N0NTRYTlZzSgpTa1J6ZkNMNDZieXBtNC8ySy9iYllpV2gwaDZ3a2loamE5dytrTFJCM2ttRld2ZlNtVUdHa2NhV0l2bzVBZkVBCnAzMEN0bDkyemM0Y3U1Tkh5cFFmYlduRjl5VnpPTUlTbk54TW1icFdvajB2MlZ3UlNMbWZWY015dlZ2cy8yaVoKT0hyODE4MnlIZFFLbmVnNmpjV1c4UkliTlE0ZXdLc3lYSUcxK0loY2pJYkYxY3JucUJocWE1d3FUaEdpOEROYQpSWWRnUC9LTjBLMm44WnZGVi9hOUxRVTEyZXBROUd2d3BFTnBBZ01CQUFHamdjWXdnY013RGdZRFZSMFBBUUgvCkJBUURBZ1dnTUIwR0ExVWRKUVFXTUJRR0NDc0dBUVVGQndNQkJnZ3JCZ0VGQlFjREFqQU1CZ05WSFJNQkFmOEUKQWpBQU1COEdBMVVkSXdRWU1CYUFGRURRNjFlcXhlN29IT2ZTOWdsdHU4SFVxQ0VCTUdNR0ExVWRFUVJjTUZxQwpDV3hqYlMxdVoybHVlSUlSYkdOdExXNW5hVzU0TG1SbFptRjFiSFNDRld4amJTMXVaMmx1ZUM1a1pXWmhkV3gwCkxuTjJZNElqYkdOdExXNW5hVzU0TG1SbFptRjFiSFF1YzNaakxtTnNkWE4wWlhJdWJHOWpZV3d3RFFZSktvWkkKaHZjTkFRRUxCUUFEZ2dFQkFMUWppTWd6cnBUSFVkQXoyY1ZhMzcrUTlkUjZEcXdXNzRGVXFWQlRRTUZhUUg3MQpEd3NidmxZUkFhdVVxT1FSRDl0TWo0NXgrRjlFcndOSnlaMGt1aXdETE1yWmpEaE9xQnNmYUlpS0lQeWtSeXZzCjNBbTAxSVdTZmRLaGZZK1U1bjRmUDJLdTlCNk9iaSt1aEt5K1VmRy9TRGNpQitpZmJiK1J6MitnVThoSzNvVFUKT0JaUEptZTF1WEZwdmZvV0VxTXFWYlMzYkNoM2ZtbWdpY011TklIa3NraXpJTmdzNkRyNUxab01sSFYxODB6bApvZ0pFSXhOYk4ya01xNDlKQ01RYk1zZUlvY3pTcmhYWGdzSlR3blRqK3ZHb3ZZUGNKQS9tMC9EZVZQZkNsdzhHCnJORzJkMmQ2TWVTQTQ4NTQycnAyV2oraW0yUFNpVU95bnVrUSt3QT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+  tls.key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb2dJQkFBS0NBUUVBMlF5eVp6bTg0RjdPcXZBLysyektYUkF2LzNpeHE4d21MUWYzMFlpYWF1UkRTQ09VClovOERJMDdKVHowVVI4VW5uS21PN3h0Tm5lMTlydk4wK1JoS3lSRE5hbUo1MU15VnQxcy9VNkhrbkxlZUZ6VmIKQ1VwRWMzd2krT204cVp1UDlpdjIyMklsb2RJZXNKSW9ZMnZjUHBDMFFkNUpoVnIzMHBsQmhwSEdsaUw2T1FIeApBS2Q5QXJaZmRzM09ITHVUUjhxVUgyMXB4ZmNsY3pqQ0VwemNUSm02VnFJOUw5bGNFVWk1bjFYRE1yMWI3UDlvCm1UaDYvTmZOc2gzVUNwM29PbzNGbHZFU0d6VU9Ic0NyTWx5QnRmaUlYSXlHeGRYSzU2Z1lhbXVjS2s0Um92QXoKV2tXSFlEL3lqZEN0cC9HYnhWZjJ2UzBGTmRucVVQUnI4S1JEYVFJREFRQUJBb0lCQUZDaGNOejhDL2hsLyt4cwpsN2cxTCsvbWhZNG9MZ2llTEVocVAxdXRuWCs4RUdxS0hTV05ESU5mVDFXS1lUQlFRMmpsYkYzVERNQndhMUpFCnl0MkdjckhDOWl4aExOVXFzeXVNVURnbldpQUY3a3E4M1hiVUNoM0VyZEUrTTRIbWNsS0cvb3Q5S0hHMjl3T3QKS0NmVzk5aWVOUGlMTlZDKy9IVlZ6WXZLTjdXcDFYcDB0d1RKTWY3RWNadkRqa1I1VU1BT2w1MytBMzVEbjFLZwpUbFN0enBkc3RraUtRYjkyYUZLZk1lWXdtTmJyZGxFRXZLalRDUFR0SS9LWEZyTnlsaUtqWUthRVNPbVpTT2xvClVUWCtOQkZ5WXlGbnhLbjZ5Mkd1dzJBeWdDL2czT3pIc2pDaHVNU1ZCd1lVNHpoVXZZcy9DTkY5NlBVSlJNTVgKeHl3VFBDRUNnWUVBOVBzdmVFdjRFdFI1UXpaWlVIVC9kekVkeUpURi9BYTQvaG1WN1AyVTVqa2F0dC9CR055Rgp3Y3VERU9nZzR6QWdvcnNwNEttVGhHVk9HeTFhR3BIaS9kQTJ5TU9kSGRveE40QkZrOXVidjh1cWRxSFVIemlWCnp0N2ZyZmJtRGpPOEYrUFRYRm9LKzkxWEtzU0FNOGRFMWRGL1IrZ0grbDlpUkJUdDZIaVpvcVVDZ1lFQTRzL2wKUWNmQjN2dUNacGRXNFV1MkZRelJtZXpqeFFUc3l0dGYvUXpUOExpM1lKMWhSb3RrTFRoc1MrVWhsRjZ0MURhZQpMdHRsUStZd2lwWFBJVnJha2dpbzdiUzRJSENGSUZmdXl1UWFUWjlKSHdCbm9JRUpnSXBPV0lDZjhYNnY5TVFoCjRIdG5PQ1VJYWZXUURyeThHd1VGbjZvUk9pcXJjdUFEU3d2cjFuVUNnWUJ2dmVjUUl1NjdnQWp6dkdXT3lsOEEKT2ZvUTFMTmQycDhrMy95L3hZYldZRE9zT0hGMmFwZmtKblRaRUZoMzZDcnFyeDVSNkdkdUcxcytFRGlxSitMMgp6TE5BYmVGTGpZdW5laTNDWElnMU9xdTlRdUZqZ0Vic3ZrSWVzcUNLMTlReXZXdGFFNFF4RCt2RGlTL0U3bDZhCmZOMW1xaEtCaEdKcEZYYlM4N2Q0TlFLQmdBUmVHSDRSeUt2d2oreEYwY2g0MnNMQkFuQkNYWWgzdGMrYU5kajcKbkVFd2JXZVE0RVNwZm41WWJjMXdWaHN6VDRtY202TXZXbDNhV3Vqd1JaTFEyeENnMWcvdHdQWHU5TUZRc0NwOApCZjJrcVpYTlBqR2JDb0hOS0FFUVNRUXZlbGZ1UnZDNXI1MG5LV2hROERzNGF5N2lBOSsxT0t1MEVxVWRwektVCndpL1pBb0dBYXBSQmpvUHp4bmdXYzl0d2V3QjcrMlUyRkg5dTB6Sk5nSDFaczVKc3hBS1E4TGJrdDBFdHRhMnQKcXJLZ3NBbzB5ZUt1ZWNJY0pJTmlJdjBxL0ZQRjJKUjMrMUF3eVpYeVowUlk4bUxOQnhrQzRSeEFSUW9LK3NzTQpvUEQxTFhsc0FwU2dzSy94OWJWT0w3cVJ2N1pBRVR0U00wVG9aNWU3b0N0WmxxK1I1V1U9Ci0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
+  ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURFakNDQWZxZ0F3SUJBZ0lSQU1taktDMFhVMmJZVTlJdWg0eGRPcHN3RFFZSktvWklodmNOQVFFTEJRQXcKRXpFUk1BOEdBMVVFQXhNSWJtZHBibmd0WTJFd0hoY05NalV3TlRFNU1USTBOek16V2hjTk1qWXdOVEU1TVRJMApOek16V2pBVE1SRXdEd1lEVlFRREV3aHVaMmx1ZUMxallUQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQURnZ0VQCkFEQ0NBUW9DZ2dFQkFMc3JPQkp3eXpGdUt4L2JHcVc4YUd3QTcyTlEvQ0VhbDB3dHJHNjNzaGh0SGlENkQ4Z2EKdzgyRTZhOFVWRVNxaVBUakVhSG56aFE3VGx0SThTMmxVdVZ2OW4rWkpSbGplbVBvYTdXR1I5cm1MWlgrdjAxVQpVTVVQS1B6R3BKZUlsa1E2emY3UzI4MTJjNmNVblpQdk9udWZNSEppbnBpNk8rNUNDSktteCtQZkY5bC9ZZ3NWClZiaFFFTU9WUm5OditQMEJRVFgxUUIvKzFaaUxDMDFjMVNqT2d2RjhBMUVzZjBFcUZGaXBQUGI3K0daK0p0RGYKbDBKd2NHUlE3M001WXhVSzNCWnJEME1YUlFqeEdhdGo2VHlneEsrZEg2N3gyNU1wVXduMVVNOTdpczJTbkRSKwp4WGFHdnRGUnI3cWNCZjY4N3RLMXgyaVEvTGN5bFZYaWwrRUNBd0VBQWFOaE1GOHdEZ1lEVlIwUEFRSC9CQVFECkFnS2tNQjBHQTFVZEpRUVdNQlFHQ0NzR0FRVUZCd01CQmdnckJnRUZCUWNEQWpBUEJnTlZIUk1CQWY4RUJUQUQKQVFIL01CMEdBMVVkRGdRV0JCUkEwT3RYcXNYdTZCem4wdllKYmJ2QjFLZ2hBVEFOQmdrcWhraUc5dzBCQVFzRgpBQU9DQVFFQVRia1E1Z3o5eGJQcThPNDZRNStZUkNFZGRickRNVEEwdzFEcXBzWjlHa0dpamtxRE9GUS9DRkJkClFxRmhsamgrOVZZZm8yVjd0T20zTDdJcE9LVW55QWtWc045dXVsWVhXc21MK1ZEblZkVkxWWCtzS0lxTGtGTzAKSDdDaDZVK2V5V2dqem53VGk0anhMcnhWU1l1aDc5M01HUmF2Vm5UNkNNQTQwWmZHanRqSmtMOG1MenJyWXZiMApiOVBPOVNWcDVpL0FvNGJrdEdsMm1LY2J3QTdheGgxRG5lR0FwbG9hQ0g2eVlkVWoyN2lQa2FGVEc0M2xjU2s5ClNKTWt6TjRqOSs4bjJNeTNyb0xjVmhZTG1WT0w0akhUUVZwVzE5dVFrMldSbWQ5cldsRkpDN0VHR2lrWFFLNHEKSWtOVkpMWjM4a3FCTDJjY0dCTE5EU0dYTHB0WXdnPT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+---
+# Source: nginx/templates/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: lcm-nginx
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: lcm-nginx
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/version: 1.28.0
+    helm.sh/chart: nginx-20.0.2
+  annotations:
+spec:
+  type: LoadBalancer
+  sessionAffinity: None
+  externalTrafficPolicy: "Cluster"
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+    - name: https
+      port: 443
+      targetPort: https
+  selector:
+    app.kubernetes.io/instance: lcm-nginx
+    app.kubernetes.io/name: nginx
+---
+# Source: nginx/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lcm-nginx
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: lcm-nginx
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/version: 1.28.0
+    helm.sh/chart: nginx-20.0.2
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  strategy:
+    rollingUpdate: {}
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: lcm-nginx
+      app.kubernetes.io/name: nginx
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: lcm-nginx
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: nginx
+        app.kubernetes.io/version: 1.28.0
+        helm.sh/chart: nginx-20.0.2
+      annotations:
+    spec:
+      
+      shareProcessNamespace: false
+      serviceAccountName: lcm-nginx
+      automountServiceAccountToken: false
+      affinity:
+        podAffinity:
+          
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: lcm-nginx
+                    app.kubernetes.io/name: nginx
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        nodeAffinity:
+          
+      hostNetwork: false
+      hostIPC: false
+      securityContext:
+        fsGroup: 1001
+        fsGroupChangePolicy: Always
+        supplementalGroups: []
+        sysctls: []
+      initContainers:
+        - name: preserve-logs-symlinks
+          image: docker.io/bitnami/nginx:1.28.0-debian-12-r0
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            limits:
+              cpu: 150m
+              ephemeral-storage: 2Gi
+              memory: 192Mi
+            requests:
+              cpu: 100m
+              ephemeral-storage: 50Mi
+              memory: 128Mi
+          command:
+            - /bin/bash
+          args:
+            - -ec
+            - |
+              #!/bin/bash
+              . /opt/bitnami/scripts/libfs.sh
+              # We copy the logs folder because it has symlinks to stdout and stderr
+              if ! is_dir_empty /opt/bitnami/nginx/logs; then
+                cp -r /opt/bitnami/nginx/logs /emptydir/app-logs-dir
+              fi
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /emptydir
+      containers:
+        - name: nginx
+          image: docker.io/bitnami/nginx:1.28.0-debian-12-r0
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: NGINX_HTTP_PORT_NUMBER
+              value: "8080"
+            - name: NGINX_HTTPS_PORT_NUMBER
+              value: "8443"
+          envFrom:
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: https
+              containerPort: 8443
+          livenessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            tcpSocket:
+              port: http
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 3
+            httpGet:
+              path: /
+              port: http
+          resources:
+            limits:
+              cpu: 150m
+              ephemeral-storage: 2Gi
+              memory: 192Mi
+            requests:
+              cpu: 100m
+              ephemeral-storage: 50Mi
+              memory: 128Mi
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /tmp
+              subPath: tmp-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/nginx/conf
+              subPath: app-conf-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/nginx/logs
+              subPath: app-logs-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/nginx/tmp
+              subPath: app-tmp-dir
+            - name: certificate
+              mountPath: /certs
+      volumes:
+        - name: empty-dir
+          emptyDir: {}
+        - name: certificate
+          secret:
+            secretName: lcm-nginx-tls
+            items:
+              - key: tls.crt
+                path: server.crt
+              - key: tls.key
+                path: server.key

@@ -1,0 +1,16 @@
+{{- if and .Values.phpMyAdmin.enabled .Values.mysql.enabled }} # Condicional que verifica si phpMyAdmin y MySQL están habilitados en el archivo de valores
+apiVersion: v1                    # Versión de la API utilizada para el recurso Service
+kind: Service                     # Define el tipo de recurso como Service
+metadata:
+  name: phpmyadmin-service        # Nombre del servicio que expone phpMyAdmin
+  namespace: {{ .Release.Namespace }} # Espacio de nombres dinámico basado en Helm
+spec:
+  type: NodePort                  # Tipo de servicio, en este caso NodePort para exponerlo fuera del clúster
+  selector:                       # Selector para asociar el servicio a los Pods de phpMyAdmin
+    app: phpmyadmin               # Etiqueta que identifica los Pods de phpMyAdmin
+  ports:                          # Configuración de los puertos del servicio
+  - protocol: TCP                 # Protocolo utilizado, TCP en este caso
+    nodePort: {{ .Values.service.phpMyAdminNodePort }} # Puerto del nodo para acceder a phpMyAdmin desde fuera del clúster
+    port: {{ .Values.phpMyAdmin.port }}               # Puerto interno del servicio
+    targetPort: {{ .Values.phpMyAdmin.port }}         # Puerto del contenedor al que se redirige el tráfico
+{{- end }} # Fin del bloque condicional

@@ -1,0 +1,67 @@
+{{- if .Values.mysql.enabled }} # Condicional que verifica si MySQL está habilitado en el archivo de valores
+apiVersion: apps/v1            # Versión de la API utilizada para el recurso StatefulSet
+kind: StatefulSet              # Define el tipo de recurso como StatefulSet
+metadata:
+  name: mysql                  # Nombre del StatefulSet
+  namespace: {{ .Release.Namespace }} # Espacio de nombres dinámico basado en Helm
+  labels:                      # Etiquetas para clasificar y organizar los recursos
+    app: mysql                 # Identifica la aplicación como MySQL
+    type: standalone           # Tipo de despliegue
+spec:
+  replicas: 1                  # Número de réplicas del StatefulSet (única instancia en este caso)
+  selector:
+    matchLabels:               # Selector para asociar los Pods con estas etiquetas
+      app: mysql               # Etiqueta que debe coincidir con los Pods
+      type: standalone         # Etiqueta adicional para mayor precisión
+  serviceName: mysql           # Nombre del Service asociado al StatefulSet
+  template:                    # Plantilla para definir las características de los Pods
+    metadata:
+      labels:                  # Etiquetas que heredan los Pods
+        app: mysql
+        type: standalone
+    spec:
+      containers:              # Configuración de los contenedores dentro de los Pods
+      - name: mysql            # Nombre del contenedor
+        image: {{ .Values.mysql.image }} # Imagen del contenedor obtenida del archivo de valores
+        imagePullPolicy: IfNotPresent    # Política de descarga de la imagen
+        ports:                 # Puertos expuestos por el contenedor
+        - name: server
+          containerPort: 3306  # Puerto donde escucha MySQL
+        env:                   # Variables de entorno para configurar el contenedor
+        {{- range .Values.mysql.users }} # Iteración sobre la lista de usuarios definida en el archivo de valores
+        - name: {{ if .isRoot }}MYSQL_ROOT_PASSWORD{{ else }}MYSQL_PASSWORD{{ end }} # Configura la contraseña de root o de usuario estándar
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret       # Referencia al Secret donde están las contraseñas
+              key: mysql-{{ .name }}-password # Clave específica en el Secret
+        {{- if not .isRoot }}
+        - name: MYSQL_USER             # Configura el usuario si no es root
+          value: {{ .name }}
+        {{- end }}
+        {{- end }}
+        - name: MYSQL_DATABASE         # Variable de entorno para el nombre de la base de datos
+          value: {{ .Values.mysql.databaseName }}
+        volumeMounts:                  # Configura los volúmenes montados en el contenedor
+        - name: data
+          mountPath: /var/lib/mysql    # Directorio donde MySQL almacena los datos
+        resources:                     # Configuración de los recursos del contenedor
+          limits:
+            memory: {{ .Values.mysql.resources.limits.memory }} # Límite máximo de memoria
+            cpu: {{ .Values.mysql.resources.limits.cpu }}       # Límite máximo de CPU
+          requests:
+            memory: {{ .Values.mysql.resources.requests.memory }} # Memoria mínima requerida
+            cpu: {{ .Values.mysql.resources.requests.cpu }}       # CPU mínima requerida
+  volumeClaimTemplates:         # Configuración de volúmenes persistentes
+  - metadata:
+      name: data                # Nombre del volumen
+      labels:                   # Etiquetas asociadas al volumen
+        app: mysql
+        type: standalone
+    spec:
+      accessModes:
+      - ReadWriteOnce           # Modo de acceso al volumen (lectura/escritura por un solo nodo)
+      storageClassName: {{ .Values.persistentVolume.storageClassName }} # Clase de almacenamiento configurada
+      resources:
+        requests:
+          storage: {{ .Values.mysql.storage.size }} # Tamaño del almacenamiento solicitado
+{{- end }} # Fin del condicional

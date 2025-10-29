@@ -1,0 +1,27 @@
+{{- if and .Values.phpMyAdmin.enabled .Values.mysql.enabled }} # Verifica si phpMyAdmin y MySQL están habilitados en el archivo de valores
+apiVersion: apps/v1               # Especifica la versión de la API de Kubernetes para el recurso Deployment
+kind: Deployment                  # Define el tipo de recurso como Deployment
+metadata:
+  name: phpmyadmin                # Nombre del Deployment
+  namespace: {{ .Release.Namespace }} # Espacio de nombres dinámico basado en Helm
+spec:
+  replicas: 1                     # Número de réplicas deseadas para phpMyAdmin
+  selector:
+    matchLabels:                  # Selector para asociar el Deployment con los Pods correspondientes
+      app: phpmyadmin             # Etiqueta que identifica los Pods de phpMyAdmin
+  template:                       # Plantilla que define las características de los Pods
+    metadata:
+      labels:                     # Etiquetas asociadas a los Pods creados por este Deployment
+        app: phpmyadmin           # Etiqueta para identificar los Pods de phpMyAdmin
+    spec:
+      containers:                 # Configuración de los contenedores dentro de los Pods
+      - name: phpmyadmin          # Nombre del contenedor
+        image: {{ .Values.phpMyAdmin.image }} # Imagen del contenedor tomada del archivo de valores
+        ports:                    # Puertos expuestos por el contenedor
+        - containerPort: {{ .Values.phpMyAdmin.port }} # Puerto en el que escucha phpMyAdmin
+        env:                      # Variables de entorno configuradas para el contenedor
+        - name: PMA_HOST          # Define el host de la base de datos que phpMyAdmin debe usar
+          value: mysql            # Apunta al servicio MySQL
+        - name: PMA_PORT          # Define el puerto de la base de datos que phpMyAdmin debe usar
+          value: "3306"           # Puerto predeterminado para MySQL
+{{- end }} # Fin del bloque condicional

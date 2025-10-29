@@ -1,0 +1,23 @@
+# Especifica la versión de la API de Kubernetes para el recurso Service
+apiVersion: v1
+# Define el tipo de recurso, en este caso, un Service
+kind: Service
+# Metadatos asociados al Service
+metadata:
+  # Nombre del Service
+  name: phpmyadmin-service
+  # Espacio de nombres donde se desplegará el Service, dinámico con Helm
+  namespace: {{ .Release.Namespace }}
+# Especificación del Service
+spec:
+  # Tipo de Service: NodePort expone el servicio a través de un puerto específico en cada nodo del clúster
+  type: NodePort
+  # Selector que relaciona este Service con los Pods adecuados
+  selector:
+    app: phpmyadmin  # Busca Pods con esta etiqueta
+  # Configuración de los puertos del Service
+  ports:
+  - protocol: TCP                            # Protocolo utilizado, en este caso TCP
+    nodePort: {{ .Values.service.phpMyAdminNodePort }} # Puerto expuesto en los nodos del clúster
+    port: {{ .Values.phpMyAdmin.port }}              # Puerto expuesto por el Service dentro del clúster
+    targetPort: {{ .Values.phpMyAdmin.port }}        # Puerto al que redirige el tráfico dentro del contenedor

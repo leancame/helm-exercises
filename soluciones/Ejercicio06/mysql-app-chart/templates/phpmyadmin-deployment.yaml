@@ -1,0 +1,28 @@
+{{- if and .Values.phpMyAdmin.enabled .Values.mysql.enabled }} # Comprueba que phpMyAdmin y MySQL estén habilitados antes de generar este recurso
+apiVersion: apps/v1 # Define la versión de la API para el recurso Deployment
+kind: Deployment # Especifica que el recurso creado será un Deployment
+metadata:
+  name: phpmyadmin # Nombre del Deployment
+  namespace: {{ .Release.Namespace }} # Define el namespace dinámicamente según la instalación de Helm
+spec:
+  replicas: 1 # Define el número de réplicas de pods que se desplegarán
+  selector:
+    matchLabels:
+      app: phpmyadmin # Selecciona los pods con esta etiqueta
+  template:
+    metadata:
+      labels:
+        app: phpmyadmin # Etiqueta los pods creados por este Deployment
+    spec:
+      containers:
+      - name: phpmyadmin # Nombre del contenedor
+        image: {{ .Values.phpMyAdmin.image }}{{ if .Values.phpMyAdmin.tag }}:{{ .Values.phpMyAdmin.tag }}{{ else }}:latest{{ end }} 
+        # Define la imagen del contenedor. Si se proporciona un tag específico, se utiliza; de lo contrario, se usa ":latest"
+        ports:
+        - containerPort: {{ .Values.phpMyAdmin.port }} # Expone el puerto especificado en values.yaml
+        env:
+        - name: PMA_HOST
+          value: mysql # Establece el nombre del host de MySQL
+        - name: PMA_PORT
+          value: "3306" # Especifica el puerto de MySQL al que se conectará phpMyAdmin
+{{- end }} # Finaliza la condición que envuelve el recurso

@@ -1,0 +1,16 @@
+{{- if and .Values.phpMyAdmin.enabled .Values.mysql.enabled }} # Verifica que phpMyAdmin y MySQL estén habilitados en el archivo values.yaml
+apiVersion: v1 # Define la versión de la API utilizada para este recurso
+kind: Service # Especifica que se está creando un recurso de tipo Service
+metadata:
+  name: phpmyadmin-service # Nombre del Service, utilizado para identificarlo dentro del cluster
+  namespace: {{ .Release.Namespace }} # Namespace donde se creará el recurso, definido dinámicamente por Helm
+spec:
+  type: NodePort # El tipo de servicio es NodePort, que expone el puerto a nivel del nodo
+  selector:
+    app: phpmyadmin # Selecciona los pods que tienen esta etiqueta para asociarlos con el servicio
+  ports:
+  - protocol: TCP # Protocolo utilizado para la comunicación
+    nodePort: {{ .Values.service.phpMyAdminNodePort }} # Puerto expuesto en el nodo, especificado en values.yaml
+    port: {{ .Values.phpMyAdmin.port }} # Puerto interno del servicio (ClusterIP)
+    targetPort: {{ .Values.phpMyAdmin.port }} # Puerto donde el contenedor escucha, definido en values.yaml
+{{- end }} # Finaliza la condición que verifica si phpMyAdmin y MySQL están habilitados

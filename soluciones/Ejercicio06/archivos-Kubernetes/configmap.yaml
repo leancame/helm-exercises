@@ -1,0 +1,14 @@
+# Especifica la versión de la API de Kubernetes para el recurso ConfigMap
+apiVersion: v1
+# Define el tipo de recurso, en este caso, un ConfigMap
+kind: ConfigMap
+# Metadatos asociados al ConfigMap
+metadata:
+  # Nombre del ConfigMap
+  name: mysql-config
+  # Espacio de nombres en el que se crea el ConfigMap
+  namespace: mysql-app
+# Datos del ConfigMap
+data:
+  # Variable de entorno para el nombre de la base de datos MySQL
+  MYSQL_DATABASE: mydatabase

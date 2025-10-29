@@ -1,0 +1,37 @@
+# Especifica la versión de la API de Kubernetes para el recurso Deployment
+apiVersion: apps/v1
+# Define el tipo de recurso, en este caso, un Deployment
+kind: Deployment
+# Metadatos asociados al Deployment
+metadata:
+  # Nombre del Deployment
+  name: phpmyadmin
+  # Espacio de nombres en el que se desplegará el Deployment, dinámico con Helm
+  namespace: {{ .Release.Namespace }}
+# Especificación del Deployment
+spec:
+  # Número de réplicas para el Deployment
+  replicas: 1
+  # Selector que relaciona este Deployment con los Pods adecuados
+  selector:
+    matchLabels:
+      app: phpmyadmin  # Busca Pods con esta etiqueta
+  # Plantilla del Pod asociada al Deployment
+  template:
+    metadata:
+      # Etiquetas del Pod
+      labels:
+        app: phpmyadmin
+    spec:
+      # Contenedores dentro del Pod
+      containers:
+      - name: phpmyadmin           # Nombre del contenedor
+        image: {{ .Values.phpMyAdmin.image }}  # Imagen de Docker para phpMyAdmin, definida en los valores de Helm
+        ports:
+        - containerPort: {{ .Values.phpMyAdmin.port }}  # Puerto que expone el contenedor, dinámico desde los valores
+        # Variables de entorno necesarias para la configuración de phpMyAdmin
+        env:
+        - name: PMA_HOST
+          value: mysql          # Host de la base de datos, en este caso el nombre del servicio de MySQL
+        - name: PMA_PORT
+          value: "3306"         # Puerto en el que MySQL está esc

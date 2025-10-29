@@ -1,0 +1,19 @@
+# Especifica la versión de la API de Kubernetes para el recurso PersistentVolumeClaim
+apiVersion: v1
+# Define el tipo de recurso, en este caso, un PersistentVolumeClaim
+kind: PersistentVolumeClaim
+# Metadatos asociados al PersistentVolumeClaim
+metadata:
+  # Nombre de la PersistentVolumeClaim
+  name: mysql-pvc
+  # Espacio de nombres en el que se creará la PVC
+  namespace: mysql-app
+# Especificación de la PersistentVolumeClaim
+spec:
+  # Modos de acceso solicitados para el volumen
+  accessModes:
+    - ReadWriteOnce  # Permite que solo un nodo monte el volumen en modo lectura/escritura
+  # Recursos solicitados
+  resources:
+    requests:
+      storage: 1Gi # Espacio de almacenamiento solicitado

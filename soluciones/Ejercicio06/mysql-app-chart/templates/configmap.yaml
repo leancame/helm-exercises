@@ -1,0 +1,10 @@
+apiVersion: v1                        # Versión de la API para el recurso ConfigMap
+kind: ConfigMap                       # Define el tipo de recurso como ConfigMap
+metadata:
+  name: mysql-config                  # Nombre del ConfigMap
+  namespace: {{ .Release.Namespace }} # Espacio de nombres dinámico basado en Helm
+data:                                 # Datos almacenados en el ConfigMap
+  MYSQL_DATABASE: {{ .Values.mysql.databaseName | upper | quote }} 
+  # Variable de entorno que define el nombre de la base de datos MySQL
+  # - `| upper`: Convierte el valor en mayúsculas.
+  # - `| quote`: Asegura que el valor se envuelva en comillas para evitar problemas de formato.

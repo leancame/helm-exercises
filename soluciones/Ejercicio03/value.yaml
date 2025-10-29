@@ -1,0 +1,29 @@
+# Especifica la imagen de Docker que se usará, con su etiqueta correspondiente
+image:
+  tag: 1.26.1-debian-12-r0
+# Define la cantidad de réplicas del despliegue
+replicaCount: 3
+# Estrategia de actualización para el despliegue
+updateStrategy:
+  # Tipo de estrategia de actualización: Recreate implica que las réplicas actuales se eliminan antes de crear nuevas
+  type: Recreate
+  # Configuración para rolling updates (nulo en este caso, ya que se usa Recreate)
+  rollingUpdate: null
+# Configuración para la sonda de vida (liveness probe) que verifica si el contenedor está funcionando
+livenessProbe:
+  # Indica que la sonda está deshabilitada
+  enabled: false
+# Configuración para la sonda de disponibilidad (readiness probe) que verifica si el contenedor está listo para recibir tráfico
+readinessProbe:
+  # Indica que la sonda está deshabilitada
+  enabled: false
+# Configuración del servicio para exponer el contenedor
+service:
+  # Define el puerto HTTP en el que se expondrá el servicio
+  http: 8081
+# Configuración del ingreso (ingress) para el tráfico HTTP externo
+ingress:
+  # Indica que el ingreso está habilitado
+  enabled: true
+  # Define el hostname que se usará para acceder al ingreso
+  hostname: prueba.nginx

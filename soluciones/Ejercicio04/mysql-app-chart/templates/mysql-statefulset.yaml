@@ -1,0 +1,85 @@
+# Especifica la versión de la API de Kubernetes para el recurso StatefulSet
+apiVersion: apps/v1
+# Define el tipo de recurso, en este caso, un StatefulSet
+kind: StatefulSet
+# Metadatos asociados al StatefulSet
+metadata:
+  # Nombre del StatefulSet
+  name: mysql
+  # Espacio de nombres en el que se despliega el StatefulSet, dinámico con Helm
+  namespace: {{ .Release.Namespace }}
+  # Etiquetas adicionales para clasificar y seleccionar el recurso
+  labels:
+    app: mysql        # Identifica la aplicación como MySQL
+    type: standalone   # Define el tipo de despliegue como standalone
+# Especificación del StatefulSet
+spec:
+  # Número de réplicas que tendrá el StatefulSet
+  replicas: 1
+  # Selector que relaciona este StatefulSet con los Pods adecuados
+  selector:
+    matchLabels:
+      app: mysql        # Busca Pods con esta etiqueta
+      type: standalone  # Asegura coincidencia con el tipo "standalone"
+  # Nombre del Service que gestiona las réplicas del StatefulSet
+  serviceName: mysql
+  # Plantilla de Pod asociada al StatefulSet
+  template:
+    metadata:
+      # Etiquetas del Pod
+      labels:
+        app: mysql
+        type: standalone
+    spec:
+      # Contenedores dentro del Pod
+      containers:
+      - name: mysql             # Nombre del contenedor
+        image: {{ .Values.mysql.image }}  # Imagen de Docker para el contenedor
+        imagePullPolicy: IfNotPresent     # Política de obtención de la imagen
+        ports:
+        - name: server          # Nombre descriptivo del puerto
+          containerPort: 3306   # Puerto expuesto por el contenedor
+        env:
+        # Variables de entorno necesarias para configurar MySQL
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret       # Nombre del Secret que contiene la contraseña
+              key: mysql-root-password # Clave dentro del Secret
+        - name: MYSQL_DATABASE
+          value: {{ .Values.mysql.databaseName }}  # Nombre de la base de datos
+        - name: MYSQL_USER
+          value: {{ .Values.mysql.user }}          # Usuario de la base de datos
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret        # Secret que contiene la contraseña
+              key: mysql-user-password  # Clave dentro del Secret
+        # Montaje de volúmenes para datos persistentes
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/mysql   # Ruta donde se montará el volumen
+        # Configuración de recursos para el contenedor
+        resources:
+          limits:
+            memory: {{ .Values.mysql.resources.limits.memory }} # Límite de memoria
+            cpu: {{ .Values.mysql.resources.limits.cpu }}       # Límite de CPU
+          requests:
+            memory: {{ .Values.mysql.resources.requests.memory }} # Solicitud de memoria
+            cpu: {{ .Values.mysql.resources.requests.cpu }}       # Solicitud de CPU
+  # Plantilla para reclamar volúmenes persistentes
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels:
+        app: mysql        # Etiquetas asociadas al volumen
+        type: standalone  # Indica que es un volumen standalone
+    spec:
+      # Modos de acceso al volumen
+      accessModes:
+      - ReadWriteOnce     # El volumen solo puede ser montado por un nodo a la vez
+      # Clase de almacenamiento para el volumen
+      storageClassName: {{ .Values.persistentVolume.storageClassName }}
+      resources:
+        requests:
+          storage: {{ .Values.mysql.storage.size }} # Espacio solicitado para el volumen

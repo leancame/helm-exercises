@@ -1,0 +1,20 @@
+# Especifica la versión de la API de Kubernetes para el recurso PersistentVolume
+apiVersion: v1
+# Define el tipo de recurso, en este caso, un PersistentVolume
+kind: PersistentVolume
+# Metadatos asociados al PersistentVolume
+metadata:
+  # Nombre del PersistentVolume
+  name: mysql-pv
+  namespace: mysql-app
+# Especificación del PersistentVolume
+spec:
+  # Define la capacidad de almacenamiento del volumen
+  capacity:
+    storage: 1Gi  # Tamaño del almacenamiento
+  # Modos de acceso permitidos para este volumen
+  accessModes:
+    - ReadWriteOnce  # Permite que solo un nodo monte el volumen en modo lectura/escritura
+  # Configuración del path físico donde se almacenan los datos en el nodo host
+  hostPath:
+    path: /mnt/data  # Ruta en el sistema de archivos del host donde se almacena el volumen
